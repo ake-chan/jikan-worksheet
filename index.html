@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>時間を可視化するワーク</title>
+<style>
+  :root{
+    --bg:#fbf7f2;
+    --card:#ffffff;
+    --ink:#3d3630;
+    --sub:#8a7d70;
+    --line:#ece2d6;
+    --accent:#c98b6b;
+    --accent-deep:#a5674a;
+    --gold:#b8935a;
+    --soft:#f6ede2;
+    --shadow:0 10px 30px rgba(120,90,60,.10);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.8;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:680px;margin:0 auto;padding:32px 18px 80px;}
+  header.hero{text-align:center;padding:24px 0 8px;}
+  header.hero .lead{color:var(--sub);font-size:14px;letter-spacing:.08em;margin:0 0 10px;}
+  header.hero h1{
+    font-size:26px;margin:0 0 14px;letter-spacing:.04em;font-weight:700;
+  }
+  header.hero p.desc{color:var(--sub);font-size:15px;margin:0;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:24px 22px;
+    margin:22px 0;
+    box-shadow:var(--shadow);
+  }
+  .card h2{
+    font-size:19px;margin:0 0 4px;display:flex;align-items:center;gap:8px;
+  }
+  .card h2 .star{color:var(--accent);}
+  .card .note{color:var(--sub);font-size:13px;margin:0 0 18px;}
+
+  .field{margin:14px 0;}
+  .field label{display:block;font-size:14px;margin-bottom:6px;color:var(--ink);font-weight:600;}
+  .field .hint{font-weight:400;color:var(--sub);font-size:12px;margin-left:4px;}
+  .field .inputrow{display:flex;align-items:center;gap:8px;}
+  input[type="number"]{
+    width:100%;
+    padding:12px 14px;
+    font-size:16px;
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    background:#fffdfb;
+    color:var(--ink);
+    transition:border-color .15s;
+    -moz-appearance:textfield;
+  }
+  input[type="number"]:focus{outline:none;border-color:var(--accent);}
+  input[type="date"]{
+    padding:12px 14px;font-size:16px;border:1.5px solid var(--line);
+    border-radius:12px;background:#fffdfb;color:var(--ink);font-family:inherit;
+  }
+  input[type="date"]:focus{outline:none;border-color:var(--accent);}
+  .datecard{padding:18px 22px;}
+  .unit{color:var(--sub);font-size:14px;white-space:nowrap;}
+
+  .result{
+    margin-top:18px;
+    background:var(--soft);
+    border-radius:14px;
+    padding:16px 18px;
+  }
+  .result .rtitle{font-size:13px;color:var(--accent-deep);font-weight:700;letter-spacing:.05em;margin-bottom:10px;}
+  .rrow{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding:7px 0;border-bottom:1px dashed var(--line);
+  }
+  .rrow:last-child{border-bottom:none;}
+  .rrow .k{font-size:14px;color:var(--sub);}
+  .rrow .v{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .rrow .v small{font-size:12px;font-weight:500;color:var(--sub);margin-left:3px;}
+
+  .headline{
+    text-align:center;padding:8px 0 2px;
+  }
+  .headline .big{
+    font-size:30px;font-weight:800;color:var(--accent-deep);
+    font-variant-numeric:tabular-nums;display:block;
+  }
+  .headline .cap{font-size:13px;color:var(--sub);}
+
+  .ratio-badge{
+    margin-top:14px;text-align:center;background:linear-gradient(135deg,#f3e6d6,#f9efe2);
+    border-radius:14px;padding:16px;
+  }
+  .ratio-badge .pct{font-size:34px;font-weight:800;color:var(--accent-deep);}
+  .ratio-badge .lbl{font-size:13px;color:var(--sub);display:block;margin-top:2px;}
+
+  textarea{
+    width:100%;min-height:120px;padding:14px;font-size:15px;
+    border:1.5px solid var(--line);border-radius:12px;background:#fffdfb;
+    color:var(--ink);font-family:inherit;line-height:1.8;resize:vertical;
+  }
+  textarea:focus{outline:none;border-color:var(--accent);}
+
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+  .btn{
+    flex:1;min-width:130px;padding:13px 16px;border-radius:12px;border:none;
+    font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
+    transition:transform .08s,box-shadow .15s,opacity .15s;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--accent-deep);color:#fff;box-shadow:0 6px 16px rgba(165,103,74,.28);}
+  .btn-ghost{background:#fff;color:var(--accent-deep);border:1.5px solid var(--accent);}
+
+  footer{text-align:center;color:var(--sub);font-size:17px;margin-top:32px;
+    font-family:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",serif;
+    letter-spacing:.06em;line-height:2;}
+  .empty{color:var(--sub);font-style:normal;opacity:.7;}
+
+  @media print{
+    body{background:#fff;}
+    .card{box-shadow:none;break-inside:avoid;}
+    .actions{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <p class="lead">TIME VISUALIZATION WORK</p>
+    <h1>時間を可視化するワーク</h1>
+    <p class="desc">時間を可視化することで、時間を「感じて」いきましょう。<br>数字を入れるだけで、あなたに残された時間が見えてきます。</p>
+  </header>
+
+  <!-- 実施日 -->
+  <section class="card datecard">
+    <div class="field" style="margin:0;">
+      <label>実施した日</label>
+      <div class="inputrow">
+        <input type="date" id="workDate">
+      </div>
+    </div>
+  </section>
+
+  <!-- ① 私に残された時間 -->
+  <section class="card">
+    <h2><span class="star">★</span>私に残された時間</h2>
+    <p class="note">推定寿命と今の年齢を入れてください。</p>
+
+    <div class="field">
+      <label>推定寿命 <span class="hint">（何歳まで生きると考えますか）</span></label>
+      <div class="inputrow">
+        <input type="number" id="lifeExp" placeholder="例：85" min="0" max="120">
+        <span class="unit">歳</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>今の年齢</label>
+      <div class="inputrow">
+        <input type="number" id="age" placeholder="例：40" min="0" max="120">
+        <span class="unit">歳</span>
+      </div>
+    </div>
+
+    <div class="result" id="res1">
+      <div class="headline">
+        <span class="big" id="lifeYears">— </span>
+        <span class="cap">これがあなたに残された年数です</span>
+      </div>
+      <div class="rtitle" style="margin-top:16px;">残された時間の内訳</div>
+      <div class="rrow"><span class="k">残りの日数</span><span class="v" id="lifeDays">—</span></div>
+      <div class="rrow"><span class="k">残りの時間</span><span class="v" id="lifeHours">—</span></div>
+      <div class="rrow"><span class="k">残りの分数</span><span class="v" id="lifeMin">—</span></div>
+      <div class="rrow"><span class="k">残りの秒数</span><span class="v" id="lifeSec">—</span></div>
+    </div>
+  </section>
+
+  <!-- ② 仕事の時間 -->
+  <section class="card">
+    <h2><span class="star">★</span>仕事の時間</h2>
+    <p class="note">定年までに、どれだけの時間を仕事に使うのか見てみましょう。</p>
+
+    <div class="field">
+      <label>定年の年齢 <span class="hint">（通常65歳）</span></label>
+      <div class="inputrow">
+        <input type="number" id="retireAge" value="65" min="0" max="120">
+        <span class="unit">歳</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>1年間の勤務日数 <span class="hint">（通常264日）</span></label>
+      <div class="inputrow">
+        <input type="number" id="workDaysYear" value="264" min="0" max="366">
+        <span class="unit">日</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>1日の仕事時間</label>
+      <div class="inputrow">
+        <input type="number" id="workHoursDay" placeholder="例：8" min="0" max="24" step="0.5">
+        <span class="unit">時間</span>
+      </div>
+    </div>
+
+    <div class="result" id="res2">
+      <div class="rrow"><span class="k">残りの勤務年数</span><span class="v" id="workYears">—</span></div>
+      <div class="rrow"><span class="k">残りの勤務日数</span><span class="v" id="workDays">—</span></div>
+      <div class="rrow"><span class="k">定年までの勤務時間</span><span class="v" id="workHours">—</span></div>
+
+      <div class="ratio-badge">
+        <span class="pct" id="workRatio">—</span>
+        <span class="lbl">残された人生の時間のうち、仕事が占める割合</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③ 大切な人との残りの時間 -->
+  <section class="card">
+    <h2><span class="star">★</span>大切な人との残りの時間</h2>
+    <p class="note">大切なあの人と、あと何時間一緒にいられるでしょうか。</p>
+
+    <div class="field">
+      <label>その人の推定寿命</label>
+      <div class="inputrow">
+        <input type="number" id="pLifeExp" placeholder="例：85" min="0" max="120">
+        <span class="unit">歳</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>その人の今の年齢</label>
+      <div class="inputrow">
+        <input type="number" id="pAge" placeholder="例：70" min="0" max="120">
+        <span class="unit">歳</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>1年間にその人と会う日数</label>
+      <div class="inputrow">
+        <input type="number" id="meetDays" placeholder="例：6" min="0" max="366">
+        <span class="unit">日</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>会った時に一緒にいる時間 <span class="hint">（1日あたり）</span></label>
+      <div class="inputrow">
+        <input type="number" id="meetHours" placeholder="例：8" min="0" max="24" step="0.5">
+        <span class="unit">時間</span>
+      </div>
+    </div>
+
+    <div class="result" id="res3">
+      <div class="headline">
+        <span class="big" id="togetherHours">— </span>
+        <span class="cap">これが、その人とあと一緒に過ごせる時間です</span>
+      </div>
+      <div class="rrow" style="margin-top:14px;"><span class="k">その人の残りの寿命</span><span class="v" id="pLifeYears">—</span></div>
+      <div class="rrow"><span class="k">日数に換算すると</span><span class="v" id="togetherDays">—</span></div>
+    </div>
+  </section>
+
+  <!-- 感想 -->
+  <section class="card">
+    <h2><span class="star">★</span>今感じたこと</h2>
+    <p class="note">数字を見て、今あなたが感じたことを書いてみてください。</p>
+    <textarea id="feeling" placeholder="ここに自由に書いてください…"></textarea>
+  </section>
+
+  <div class="actions">
+    <button class="btn btn-primary" onclick="window.print()">結果を印刷 / PDF保存</button>
+    <button class="btn btn-ghost" onclick="resetAll()">入力をリセット</button>
+  </div>
+
+  <footer>あなたの時間は、あなたのものです。<br>一度きりの人生、どう行きたいですか？</footer>
+
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const num = id => { const v = parseFloat($(id).value); return isNaN(v) ? null : v; };
+
+  // 数字を「1,234」形式に
+  const fmt = n => Math.round(n).toLocaleString('ja-JP');
+  const DASH = '—';
+
+  function calc(){
+    // ① 私に残された時間
+    const life = num('lifeExp'), age = num('age');
+    let remYears = null;
+    if(life!==null && age!==null && life>age){
+      remYears = life - age;
+      $('lifeYears').innerHTML = fmt(remYears) + '<small>年</small>';
+      const days = remYears*365, hours = days*24, mins = hours*60, secs = mins*60;
+      $('lifeDays').innerHTML  = fmt(days)  + ' <small>日</small>';
+      $('lifeHours').innerHTML = fmt(hours) + ' <small>時間</small>';
+      $('lifeMin').innerHTML   = fmt(mins)  + ' <small>分</small>';
+      $('lifeSec').innerHTML   = fmt(secs)  + ' <small>秒</small>';
+    } else {
+      $('lifeYears').innerHTML = DASH + '<small>年</small>';
+      ['lifeDays','lifeHours','lifeMin','lifeSec'].forEach(x=>$(x).textContent=DASH);
+    }
+
+    // ② 仕事の時間
+    const retire = num('retireAge'), wdYear = num('workDaysYear'), whDay = num('workHoursDay');
+    let workHoursTotal = null;
+    if(retire!==null && age!==null && retire>age){
+      const wYears = retire - age;
+      $('workYears').innerHTML = fmt(wYears) + ' <small>年</small>';
+      if(wdYear!==null){
+        const wDays = wYears * wdYear;
+        $('workDays').innerHTML = fmt(wDays) + ' <small>日</small>';
+        if(whDay!==null){
+          workHoursTotal = wDays * whDay;
+          $('workHours').innerHTML = fmt(workHoursTotal) + ' <small>時間</small>';
+        } else $('workHours').textContent = DASH;
+      } else { $('workDays').textContent = DASH; $('workHours').textContent = DASH; }
+    } else {
+      ['workYears','workDays','workHours'].forEach(x=>$(x).textContent=DASH);
+    }
+    // 仕事の割合 = 定年までの勤務時間 ÷ 残された人生の時間
+    if(workHoursTotal!==null && remYears!==null && remYears>0){
+      const lifeHoursTotal = remYears*365*24;
+      const ratio = workHoursTotal / lifeHoursTotal * 100;
+      $('workRatio').textContent = ratio.toFixed(1) + '%';
+    } else {
+      $('workRatio').textContent = DASH;
+    }
+
+    // ③ 大切な人との残りの時間
+    const pLife = num('pLifeExp'), pAge = num('pAge'), mDays = num('meetDays'), mHours = num('meetHours');
+    if(pLife!==null && pAge!==null && pLife>pAge){
+      const pYears = pLife - pAge;
+      $('pLifeYears').innerHTML = fmt(pYears) + ' <small>年</small>';
+      if(mDays!==null && mHours!==null){
+        const together = pYears * mDays * mHours;
+        $('togetherHours').innerHTML = fmt(together) + '<small>時間</small>';
+        $('togetherDays').innerHTML = fmt(together/24) + ' <small>日分</small>';
+      } else {
+        $('togetherHours').innerHTML = DASH + '<small>時間</small>';
+        $('togetherDays').textContent = DASH;
+      }
+    } else {
+      $('pLifeYears').textContent = DASH;
+      $('togetherHours').innerHTML = DASH + '<small>時間</small>';
+      $('togetherDays').textContent = DASH;
+    }
+  }
+
+  function resetAll(){
+    if(!confirm('入力した内容をすべて消してもよろしいですか？')) return;
+    document.querySelectorAll('input[type=number]').forEach(i=>{
+      if(i.id==='retireAge') i.value=65;
+      else if(i.id==='workDaysYear') i.value=264;
+      else i.value='';
+    });
+    $('feeling').value='';
+    setToday();
+    calc();
+  }
+
+  // 開いたとき今日の日付を初期表示
+  function setToday(){
+    const d = new Date();
+    const iso = d.getFullYear() + '-' +
+      String(d.getMonth()+1).padStart(2,'0') + '-' +
+      String(d.getDate()).padStart(2,'0');
+    $('workDate').value = iso;
+  }
+
+  document.addEventListener('input', calc);
+  setToday();
+  calc();
+</script>
+</body>
+</html>
